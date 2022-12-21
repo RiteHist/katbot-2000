@@ -12,6 +12,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     depends_on:
       - redis
 volumes:
