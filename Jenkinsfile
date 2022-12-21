@@ -17,9 +17,6 @@ pipeline {
                 always {
                     junit 'test-reports/results.xml'
                 }
-                failure {
-                    mail to: derpy.hooves.ru@gmail.com, subject: 'Test failed'
-                }
             }
         }
     }
