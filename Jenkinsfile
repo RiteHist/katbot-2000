@@ -1,22 +1,25 @@
 pipeline {
-    agent any
+    agent none
 
     stages {
-        stage('Build') {
-            steps {
-                echo 'Building'
-            }
-        }
-
         stage('Test') {
-            steps {
-                echo 'Testing'
+            agent {
+                docker {
+                    image 'python:3.9-slim'
+                }
             }
-        }
-
-        stage('Deploy') {
             steps {
-                echo 'Deploying'
+                sh 'python -m venv venv'
+                sh 'pip install -r requirements.txt'
+                sh 'pytest --junit-xml test-reports/results.xml'
+            }
+            post {
+                always {
+                    junit 'test-reports/results.xml'
+                }
+                failure {
+                    mail to: derpy.hooves.ru@gmail.com, subject: 'Test failed'
+                }
             }
         }
     }
