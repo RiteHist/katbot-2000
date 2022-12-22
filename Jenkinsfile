@@ -10,7 +10,9 @@ pipeline {
             }
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip install --user -r requirements.txt'
+                    sh 'python -m venv venv'
+                    sh '. venv/bin/activate'
+                    sh 'pip install -r requirements.txt'
                     sh 'pytest --junit-xml test-reports/results.xml'
                 }
             }
