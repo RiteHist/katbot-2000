@@ -10,7 +10,7 @@ pipeline {
             }
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip install -r requirements.txt'
+                    sh 'pip install -r requirements.txt --user'
                     sh 'python -m pytest --junit-xml test-reports/results.xml'
                 }
             }
