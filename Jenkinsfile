@@ -9,8 +9,10 @@ pipeline {
                 }
             }
             steps {
-                sh 'pip install --target ${env.WORKSPACE} -r requirements.txt'
-                sh 'pytest --junit-xml test-reports/results.xml'
+                withEnv(["HOME=${env.WORKSPACE}"]) {
+                    sh 'pip install --user -r requirements.txt'
+                    sh 'pytest --junit-xml test-reports/results.xml'
+                }
             }
             post {
                 always {
