@@ -9,7 +9,9 @@ pipeline {
                 }
             }
             steps {
-                sh 'pip install --user -r requirements.txt'
+                sh 'python -m venv venv'
+                sh 'source .venv/bin/activate'
+                sh 'pip install -r requirements.txt'
                 sh 'pytest --junit-xml test-reports/results.xml'
             }
             post {
