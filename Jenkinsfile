@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     stages {
-        stage('Test') {
+        stage('Tests') {
             agent {
                 docker {
                     image 'python:3.9-alpine'
@@ -11,7 +11,7 @@ pipeline {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
                     sh 'pip install -r requirements.txt --user'
-                    sh 'python -m pytest --junit-xml test-reports/results.xml'
+                    sh 'python -m pytest --junit-xml test-reports/pytest_results.xml'
                 }
             }
             post {
