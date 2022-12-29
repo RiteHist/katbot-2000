@@ -23,12 +23,5 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
-            agent { label 'main' }
-            steps {
-                sh 'docker-compose down'
-                sh 'docker-compose up -d --build'
-            }
-        }
     }
 }
