@@ -1,3 +1,4 @@
+import os
 import requests
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
@@ -5,19 +6,39 @@ from .db_util import get_data, put_data
 from .utils import form_inline_keyboard, check_user
 
 
-def get_image_url(target_url: str) -> str:
+def get_image_url(target_url: str, image_field: str) -> str:
     """Get image url from target."""
     response = requests.get(target_url)
     response = response.json()
-    return response[0].get('url')
+    if isinstance(response, dict):
+        img = response.get(image_field)
+    else:
+        img = response[0].get(image_field)
+    return img
 
 
 def post_image(site: str) -> str:
+    """Gets site info and constructs a request to it."""
     site_choices = get_data(0, 'funny_sites')
-    img_url = site_choices.get(site)
-    if not img_url:
+    site_info = site_choices.get(site)
+    img_request = site_info.get('request_url')
+    img_field = site_info.get('image_field')
+    api_param = site_info.get('api_key')
+    if api_param:
+        api_param = api_param + '='
+        api_key = os.getenv(site.upper() + '_API_KEY')
+        if not api_key:
+            # TODO: Add an exception throw
+            return None
+        if '?' in img_request:
+            api_param = '&' + api_param
+        else:
+            api_param = '?' + api_param
+        img_request = img_request + api_param + api_key
+    if not img_request or not img_field:
+        # TODO: Add an exception throw
         return None
-    return get_image_url(img_url)
+    return get_image_url(img_request, img_field)
 
 
 async def btn_change_funni(update: Update, context: CallbackContext) -> None:
@@ -45,6 +66,7 @@ async def on_change_funni(update: Update, context: CallbackContext) -> None:
 
 
 async def send_funny_image(update: Update, context: CallbackContext) -> None:
+    """Sends an image from selected source site."""
     check_user(update.effective_chat)
     curr_site = get_data(0, 'setting_funny').get('selected_site')
     if not curr_site:
@@ -58,6 +80,7 @@ async def send_funny_image(update: Update, context: CallbackContext) -> None:
 
 
 def get_keyboard() -> InlineKeyboardMarkup:
+    """Forms an inline keyboard from funny sites selection."""
     site_choices = get_data(0, 'funny_sites')
     keyboard = form_inline_keyboard(site_choices, 2, 'setting_funny_')
     reply_markup = InlineKeyboardMarkup(keyboard)

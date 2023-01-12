@@ -16,6 +16,7 @@ BUTTONS = ['Get funny image']
 
 
 async def error_callback(update: Update, context: CallbackContext) -> None:
+    # TODO: Move error handling to separate file.
     if isinstance(context.error, WrongChatID):
         chat_id = update.effective_chat.id
         msg = 'Sorry, you are not my sweet sweet master.'
@@ -23,7 +24,7 @@ async def error_callback(update: Update, context: CallbackContext) -> None:
 
 
 async def on_start(update: Update, context: CallbackContext) -> None:
-    """Starts the bot with a greeting message and button keyboard."""
+    """Starts the bot with a greeting message and a button keyboard."""
     chat = update.effective_chat
     check_user(effective_chat=chat)
     keyboard_buttons = [BUTTONS]
