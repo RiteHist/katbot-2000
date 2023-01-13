@@ -12,7 +12,7 @@ def form_inline_keyboard(data: dict, num_of_col: int,
     keyboard = [[]]
     row = 0
     for i, key in enumerate(data.keys()):
-        if i-1 == num_of_col:
+        if i % num_of_col == 0:
             row += 1
             keyboard.append([])
         callback_data = callback_form + key

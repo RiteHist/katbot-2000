@@ -3,26 +3,17 @@ from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ApplicationBuilder, MessageHandler
 from telegram.ext import CallbackContext, filters, CallbackQueryHandler
-from modules.exceptions import WrongChatID
 from modules.funny_img import (send_funny_image,
                                on_change_funni,
                                btn_change_funni)
 from modules.utils import check_user
 from modules.log_conf import logger
+from modules.error_handler import error_callback
 
 
 load_dotenv()
 SECRET_TOKEN = os.getenv('BOT_TOKEN')
 BUTTONS = ['Get funny image']
-
-
-async def error_callback(update: Update, context: CallbackContext) -> None:
-    # TODO: Move error handling to separate file.
-    if isinstance(context.error, WrongChatID):
-        chat_id = update.effective_chat.id
-        msg = 'Sorry, you are not my sweet sweet master.'
-        await context.bot.send_message(chat_id=chat_id, text=msg)
-        logger.exception('Got the following exception:')
 
 
 async def on_start(update: Update, context: CallbackContext) -> None:

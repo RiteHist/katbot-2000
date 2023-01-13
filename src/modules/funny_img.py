@@ -4,11 +4,15 @@ from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from .db_util import get_data, put_data
 from .utils import form_inline_keyboard, check_user
+from .exceptions import (NoImageURL, EmptyAPIKey,
+                         EmptySiteInfo, StatusCodeNot200)
 
 
 def get_image_url(target_url: str, image_field: str) -> str:
     """Get image url from target."""
     response = requests.get(target_url)
+    if response.status_code != 200:
+        raise StatusCodeNot200(response.status_code)
     response = response.json()
     if isinstance(response, dict):
         img = response.get(image_field)
@@ -28,16 +32,14 @@ def post_image(site: str) -> str:
         api_param = api_param + '='
         api_key = os.getenv(site.upper() + '_API_KEY')
         if not api_key:
-            # TODO: Add an exception throw
-            return None
+            raise EmptyAPIKey(site)
         if '?' in img_request:
             api_param = '&' + api_param
         else:
             api_param = '?' + api_param
         img_request = img_request + api_param + api_key
     if not img_request or not img_field:
-        # TODO: Add an exception throw
-        return None
+        raise EmptySiteInfo(img_request, img_field)
     return get_image_url(img_request, img_field)
 
 
@@ -73,9 +75,8 @@ async def send_funny_image(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text('You must select the site with funny'
                                         'images with /change_funni command')
     image = post_image(curr_site)
-    if not image:  # TODO add an exception throw
-        await update.message.reply_text('Something went wrong and'
-                                        ' there is no image url.')
+    if not image:
+        raise NoImageURL(image)
     if image.endswith('.gif'):
         await update.message.reply_animation(image)
     else:
