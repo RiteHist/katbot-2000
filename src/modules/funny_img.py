@@ -1,23 +1,46 @@
+import os
 import requests
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from .db_util import get_data, put_data
 from .utils import form_inline_keyboard, check_user
+from .exceptions import (NoImageURL, EmptyAPIKey,
+                         EmptySiteInfo, StatusCodeNot200)
 
 
-def get_image_url(target_url: str) -> str:
+def get_image_url(target_url: str, image_field: str) -> str:
     """Get image url from target."""
     response = requests.get(target_url)
+    if response.status_code != 200:
+        raise StatusCodeNot200(response.status_code)
     response = response.json()
-    return response[0].get('url')
+    if isinstance(response, dict):
+        img = response.get(image_field)
+    else:
+        img = response[0].get(image_field)
+    return img
 
 
 def post_image(site: str) -> str:
+    """Gets site info and constructs a request to it."""
     site_choices = get_data(0, 'funny_sites')
-    img_url = site_choices.get(site)
-    if not img_url:
-        return None
-    return get_image_url(img_url)
+    site_info = site_choices.get(site)
+    img_request = site_info.get('request_url')
+    img_field = site_info.get('image_field')
+    api_param = site_info.get('api_key')
+    if api_param:
+        api_param = api_param + '='
+        api_key = os.getenv(site.upper() + '_API_KEY')
+        if not api_key:
+            raise EmptyAPIKey(site)
+        if '?' in img_request:
+            api_param = '&' + api_param
+        else:
+            api_param = '?' + api_param
+        img_request = img_request + api_param + api_key
+    if not img_request or not img_field:
+        raise EmptySiteInfo(img_request, img_field)
+    return get_image_url(img_request, img_field)
 
 
 async def btn_change_funni(update: Update, context: CallbackContext) -> None:
@@ -45,19 +68,23 @@ async def on_change_funni(update: Update, context: CallbackContext) -> None:
 
 
 async def send_funny_image(update: Update, context: CallbackContext) -> None:
+    """Sends an image from selected source site."""
     check_user(update.effective_chat)
     curr_site = get_data(0, 'setting_funny').get('selected_site')
     if not curr_site:
         await update.message.reply_text('You must select the site with funny'
                                         'images with /change_funni command')
     image = post_image(curr_site)
-    if not image:  # TODO add an exception throw
-        await update.message.reply_text('Something went wrong and'
-                                        ' there is no image url.')
-    await update.message.reply_photo(image)
+    if not image:
+        raise NoImageURL(image)
+    if image.endswith('.gif'):
+        await update.message.reply_animation(image)
+    else:
+        await update.message.reply_photo(image)
 
 
 def get_keyboard() -> InlineKeyboardMarkup:
+    """Forms an inline keyboard from funny sites selection."""
     site_choices = get_data(0, 'funny_sites')
     keyboard = form_inline_keyboard(site_choices, 2, 'setting_funny_')
     reply_markup = InlineKeyboardMarkup(keyboard)

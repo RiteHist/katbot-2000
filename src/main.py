@@ -3,11 +3,12 @@ from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ApplicationBuilder, MessageHandler
 from telegram.ext import CallbackContext, filters, CallbackQueryHandler
-from modules.exceptions import WrongChatID
 from modules.funny_img import (send_funny_image,
                                on_change_funni,
                                btn_change_funni)
 from modules.utils import check_user
+from modules.log_conf import logger
+from modules.error_handler import error_callback
 
 
 load_dotenv()
@@ -15,15 +16,8 @@ SECRET_TOKEN = os.getenv('BOT_TOKEN')
 BUTTONS = ['Get funny image']
 
 
-async def error_callback(update: Update, context: CallbackContext) -> None:
-    if isinstance(context.error, WrongChatID):
-        chat_id = update.effective_chat.id
-        msg = 'Sorry, you are not my sweet sweet master.'
-        await context.bot.send_message(chat_id=chat_id, text=msg)
-
-
 async def on_start(update: Update, context: CallbackContext) -> None:
-    """Starts the bot with a greeting message and button keyboard."""
+    """Starts the bot with a greeting message and a button keyboard."""
     chat = update.effective_chat
     check_user(effective_chat=chat)
     keyboard_buttons = [BUTTONS]
@@ -35,6 +29,7 @@ async def on_start(update: Update, context: CallbackContext) -> None:
            f'WELCOME TO {bot_name} EXPERIENCE, {name}!')
     await context.bot.send_message(chat_id=chat.id, text=msg,
                                    reply_markup=keyboard)
+    logger.info(f'Started a new chat with id {chat.id}')
 
 
 def main() -> None:

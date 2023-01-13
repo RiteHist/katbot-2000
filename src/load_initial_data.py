@@ -16,9 +16,15 @@ def load_data() -> None:
         with open(csv_file, 'r', encoding='UTF-8') as data:
             reader = csv.reader(data, delimiter=',')
             for row in reader:
-                data_to_save.update({row[0]: row[1]})
+                if csv_file.name.startswith('funny'):
+                    data_to_save.update({row[0]: {'request_url': row[1],
+                                                  'image_field': row[2],
+                                                  'api_key': row[3]}})
         key = csv_file.stem
-        put_data(data_to_save, 0, key)
+        if data_to_save:
+            put_data(data_to_save, 0, key)
+        else:
+            print('No data were added.')
 
 
 if __name__ == '__main__':
