@@ -8,6 +8,7 @@ from modules.funny_img import (send_funny_image,
                                on_change_funni,
                                btn_change_funni)
 from modules.utils import check_user
+from modules.log_conf import logger
 
 
 load_dotenv()
@@ -21,6 +22,7 @@ async def error_callback(update: Update, context: CallbackContext) -> None:
         chat_id = update.effective_chat.id
         msg = 'Sorry, you are not my sweet sweet master.'
         await context.bot.send_message(chat_id=chat_id, text=msg)
+        logger.exception('Got the following exception:')
 
 
 async def on_start(update: Update, context: CallbackContext) -> None:
@@ -36,6 +38,7 @@ async def on_start(update: Update, context: CallbackContext) -> None:
            f'WELCOME TO {bot_name} EXPERIENCE, {name}!')
     await context.bot.send_message(chat_id=chat.id, text=msg,
                                    reply_markup=keyboard)
+    logger.info(f'Started a new chat with id {chat.id}')
 
 
 def main() -> None:

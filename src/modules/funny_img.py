@@ -76,7 +76,10 @@ async def send_funny_image(update: Update, context: CallbackContext) -> None:
     if not image:  # TODO add an exception throw
         await update.message.reply_text('Something went wrong and'
                                         ' there is no image url.')
-    await update.message.reply_photo(image)
+    if image.endswith('.gif'):
+        await update.message.reply_animation(image)
+    else:
+        await update.message.reply_photo(image)
 
 
 def get_keyboard() -> InlineKeyboardMarkup:
