@@ -16,7 +16,6 @@ services:
     depends_on:
       - redis
     volumes:
-      - bot_logs:/app/logs
+      - .logs/:/app/logs
 volumes:
   redis_data:
-  bot_logs:

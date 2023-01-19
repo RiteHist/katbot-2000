@@ -20,7 +20,7 @@ LOGGING_CONFIG = {
     'loggers': {
         'super_logger': {
             'handlers': ['file_handler'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True,
         },
     },

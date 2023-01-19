@@ -42,4 +42,4 @@ async def error_callback(update: Update, context: CallbackContext) -> None:
     exception_func = EXCEPTION_CHOICES.get(exception_name)
     if exception_func:
         await exception_func(update)
-    logger.exception('Got the following exception:')
+    logger.error(context.error)
