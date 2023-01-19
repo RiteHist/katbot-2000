@@ -1,8 +1,5 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from .exceptions import (WrongChatID, NoImageURL,
-                         EmptyAPIKey, EmptySiteInfo,
-                         StatusCodeNot200)
 from .log_conf import logger
 
 
@@ -31,15 +28,18 @@ async def status_code_not_200(update: Update) -> None:
     await update.message.reply_text(msg)
 
 
+EXCEPTION_CHOICES = {
+    'WrongChatID': wrong_id_error,
+    'NoImageURL': no_image_url,
+    'EmptyAPIKey': empty_api_key,
+    'EmptySiteInfo': empty_site_info,
+    'StatusCodeNot200': status_code_not_200
+}
+
+
 async def error_callback(update: Update, context: CallbackContext) -> None:
-    if isinstance(context.error, WrongChatID):
-        await wrong_id_error(update)
-    if isinstance(context.error, NoImageURL):
-        await no_image_url(update)
-    if isinstance(context.error, EmptyAPIKey):
-        await empty_api_key(update)
-    if isinstance(context.error, EmptySiteInfo):
-        await empty_site_info(update)
-    if isinstance(context.error, StatusCodeNot200):
-        await status_code_not_200(update)
-    logger.exception('Got the following exception:')
+    exception_name = context.error.__class__.__name__
+    exception_func = EXCEPTION_CHOICES.get(exception_name)
+    if exception_func:
+        await exception_func(update)
+    logger.error(context.error)

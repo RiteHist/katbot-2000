@@ -130,4 +130,9 @@ dmypy.json
 
 # .idea
 .idea
+
+# Data dir
 /data
+
+# Logs dir
+/.logs
