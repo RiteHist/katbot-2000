@@ -3,9 +3,12 @@ import requests
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from .db_util import get_data, put_data
-from .utils import form_inline_keyboard, check_user
+from .utils import check_user, form_keyboard
 from .exceptions import (NoImageURL, EmptyAPIKey,
                          EmptySiteInfo, StatusCodeNot200)
+
+
+# TODO: Add a way for user to add new image sources through chat
 
 
 def get_image_url(target_url: str, image_field: str) -> str:
@@ -86,6 +89,8 @@ async def send_funny_image(update: Update, context: CallbackContext) -> None:
 def get_keyboard() -> InlineKeyboardMarkup:
     """Forms an inline keyboard from funny sites selection."""
     site_choices = get_data(0, 'funny_sites')
-    keyboard = form_inline_keyboard(site_choices, 2, 'setting_funny_')
+    keyboard = form_keyboard(data=site_choices.keys(),
+                             num_of_col=2, inline=True,
+                             callback_form='setting_funny_')
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
