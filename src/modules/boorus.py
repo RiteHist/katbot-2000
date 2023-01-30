@@ -4,6 +4,7 @@ from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup
 from telegram.ext import (CallbackContext, ConversationHandler,
                           MessageHandler, filters, CallbackQueryHandler)
 from .db_util import get_data, put_data
+from .exceptions import EmptyBooruResult
 from .utils import form_keyboard, MAIN_BUTTONS, on_back, check_user
 
 
@@ -59,7 +60,10 @@ async def get_random_img(update: Update, context: CallbackContext) -> int:
         search_query = get_data(0, 'booru_tags').get(selected_tags)
     else:
         search_query = 'order:random'
-    response = await client.search_image(query=search_query)
+    try:
+        response = await client.search_image(query=search_query)
+    except KeyError:
+        raise EmptyBooruResult(booru=selected_client, tags=search_query)
     images = booru.resolve(response)
     r_num = randint(0, len(images) - 1)
     image = images[r_num]

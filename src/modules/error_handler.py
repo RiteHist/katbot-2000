@@ -28,12 +28,17 @@ async def status_code_not_200(update: Update) -> None:
     await update.message.reply_text(msg)
 
 
+async def empty_booru_result(update: Update) -> None:
+    msg = 'Found nothing with these tags!'
+    await update.message.reply_text(msg)
+
 EXCEPTION_CHOICES = {
     'WrongChatID': wrong_id_error,
     'NoImageURL': no_image_url,
     'EmptyAPIKey': empty_api_key,
     'EmptySiteInfo': empty_site_info,
-    'StatusCodeNot200': status_code_not_200
+    'StatusCodeNot200': status_code_not_200,
+    'EmptyBooruResult': empty_booru_result
 }
 
 

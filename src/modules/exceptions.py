@@ -45,3 +45,14 @@ class StatusCodeNot200(Exception):
     def __str__(self) -> str:
         return (f'Got status code {self.status_code} '
                 'trying to reach an endpoint.')
+
+
+class EmptyBooruResult(Exception):
+    def __init__(self, booru, tags) -> None:
+        self.booru = booru
+        self.tags = tags
+        super().__init__()
+
+    def __str__(self) -> str:
+        return (f'Got an empty result list from {self.booru} '
+                f'with following tags: {self.tags}')
