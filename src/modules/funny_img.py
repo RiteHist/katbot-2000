@@ -9,6 +9,7 @@ from .exceptions import (NoImageURL, EmptyAPIKey,
 
 
 # TODO: Add a way for user to add new image sources through chat
+# TODO: Possibly create ConversationHandler?
 
 
 def get_image_url(target_url: str, image_field: str) -> str:
