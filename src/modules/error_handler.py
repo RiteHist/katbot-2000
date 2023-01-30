@@ -49,3 +49,4 @@ async def error_callback(update: Update, context: CallbackContext) -> None:
         await exception_func(update)
     logger.error(context.error)
     logger.exception('Exception:')
+    await update.message.reply_text(context.error)

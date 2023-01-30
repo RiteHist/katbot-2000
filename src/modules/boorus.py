@@ -67,11 +67,12 @@ async def get_random_img(update: Update, context: CallbackContext) -> int:
     images = booru.resolve(response)
     r_num = randint(0, len(images) - 1)
     image = images[r_num]
-    if not image:
-        msg = 'Something went wrong'
-        await update.message.reply_text(text=msg)
-        return MAIN_MENU
-    await update.message.reply_photo(image)
+    if image.endswith('.gif'):
+        await update.message.reply_animation(image)
+    elif image.endswith('.mp4') or image.endswith('.webm'):
+        await update.message.reply_video(image)
+    else:
+        await update.message.reply_photo(image)
     return MAIN_MENU
 
 
