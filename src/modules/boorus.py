@@ -98,10 +98,6 @@ def resolve_image_response(image_info: dict, selected_tags: str,
         if temp:
             image = temp
             break
-
-    image = image_info.get('file_url')
-    if not image:
-        image = image_info.get('file').get('url')
     post_url = image_info.get('post_url', 'Somewhere from paheal')
     if not image:
         raise NonResolvableResponse(selected_client,
