@@ -52,6 +52,11 @@ async def on_booru(update: Update, context: CallbackContext) -> int:
     return MAIN_MENU
 
 
+async def unknown_text(update: Update, context: CallbackContext) -> int:
+    msg = 'I expect a different response from you, my master.'
+    await update.message.reply_text(msg)
+
+
 async def get_random_img(update: Update, context: CallbackContext) -> int:
     """
     Gets random image/video/gif from selected booru site
@@ -70,7 +75,8 @@ async def get_random_img(update: Update, context: CallbackContext) -> int:
     else:
         search_query = ' '
     try:
-        response = await client.search(query=search_query, gacha=True)
+        response = await client.search(query=search_query, gacha=True,
+                                       random=True)
     except KeyError:
         raise EmptyBooruResult(booru=selected_client, tags=search_query)
     img_info = booru.resolve(response)
@@ -146,6 +152,10 @@ async def select_booru(update: Update, context: CallbackContext) -> int:
 
 
 async def add_tags(update: Update, context: CallbackContext) -> int:
+    msg = ('Use the following syntax to add tag groups: group_name - tags.\n'
+           'To go back to booru menu press the \'STOP\' button.')
+    keyboard = ReplyKeyboardMarkup([['STOP']])
+    await update.message.reply_text(text=msg, reply_markup=keyboard)
     return ADD_TAGS
 
 
@@ -163,7 +173,7 @@ async def select_tags(update: Update, context: CallbackContext) -> int:
     msg = ('Select a group of tags to use for your next random search. '
            f'Currently you\'ve selected {selected}.')
     reply_markup = InlineKeyboardMarkup(
-        form_keyboard(data=tags.keys(), num_of_col=1,
+        form_keyboard(data=tags.keys(), num_of_col=2,
                       inline=True, callback_form='tag_')
     )
     await update.message.reply_text(text=msg, reply_markup=reply_markup)
@@ -183,7 +193,18 @@ async def search(update: Update, context: CallbackContext) -> int:
 
 
 async def resolve_add_tags(update: Update, context: CallbackContext) -> int:
-    return MAIN_MENU
+    group_name, tags = update.message.text.split(' - ')
+    saved_tags = get_data(0, 'booru_tags')
+    if saved_tags.get(group_name):
+        msg = f'The tag group with a name {group_name} already exists!'
+        await update.message.reply_text(msg)
+        return ADD_TAGS
+    saved_tags.update({group_name: tags})
+    put_data(saved_tags, 0, 'booru_tags')
+    msg = (f'Added tag group {group_name} with the follwing tags:\n{tags}'
+           '\n\nYou can add more or press \'STOP\' to go back to booru')
+    await update.message.reply_text(msg)
+    return ADD_TAGS
 
 
 async def resolve_delete_tags(update: Update, context: CallbackContext) -> int:
@@ -225,7 +246,7 @@ async def btn_select_tags(update: Update, context: CallbackContext) -> int:
            'Here are the tags in that group:\n'
            f'{tags_in_group}')
     reply_markup = InlineKeyboardMarkup(
-        form_keyboard(data=tags.keys(), num_of_col=1,
+        form_keyboard(data=tags.keys(), num_of_col=2,
                       inline=True, callback_form='tag_')
     )
     await query.edit_message_text(text=msg, reply_markup=reply_markup)
@@ -255,20 +276,25 @@ BOORU_CONVERSATION = ConversationHandler(
             CallbackQueryHandler(btn_select_tags, r'tag_.+')
         ],
         DELETE_TAGS: [
-            CallbackQueryHandler(btn_delete_tag, r'delete_.+'),
-            MessageHandler(filters.Regex(r'.+ - .+'), resolve_delete_tags)
+            CallbackQueryHandler(btn_delete_tag, r'delete_.+')
         ],
         EDIT_TAGS: [
             CallbackQueryHandler(btn_edit_tag, r'edit_.+'),
             MessageHandler(filters.Regex(r'.+ - .+'), resolve_edit_tags)
         ],
+        ADD_TAGS: [
+            MessageHandler(
+                filters.Regex(r'^[a-zA-Z0-9() ]+ - [_a-zA-Z0-9: <>]*$'),
+                resolve_add_tags
+            )
+        ],
         # TODO: Change TEXT to regex
-        ADD_TAGS: [MessageHandler(filters.TEXT, resolve_add_tags)],
         SEARCH: [MessageHandler(filters.TEXT, resolve_search)],
     },
     # TODO: Add a fallback for unrecognized text
     fallbacks=[
         MessageHandler(filters.Text(BOORU_BUTTONS[-1]), on_back),
-        MessageHandler(filters.Regex(r'^stop/i$'), on_booru)
+        MessageHandler(filters.Text('STOP'), on_booru),
+        MessageHandler(filters.TEXT, unknown_text)
     ]
 )
