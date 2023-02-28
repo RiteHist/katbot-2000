@@ -9,14 +9,16 @@ from .exceptions import EmptyBooruResult, NonResolvableResponse
 from .utils import form_keyboard, MAIN_BUTTONS, on_back, check_user
 
 
-BOORU_BUTTONS = ['Select booru',
-                 'Get random image',
-                 'Add tags',
-                 'Select tags',
-                 'Delete tags',
-                 'Edit tags',
-                 'Search',
-                 'Back']
+BOORU_BUTTONS = [
+    'Select booru',
+    'Get random image',
+    'Add tags',
+    'Select tags',
+    'Delete tags',
+    'Edit tags',
+    'Search',
+    'Back'
+]
 
 BOORU_CLIENTS = {
     'ATFbooru': booru.Atfbooru,
@@ -168,7 +170,7 @@ async def select_tags(update: Update, context: CallbackContext) -> int:
         )
         return MAIN_MENU
     selected = get_data(0, 'setting_tags').get('selected_tags')
-    if not selected:
+    if not selected or selected not in tags.keys():
         selected = 'Nothing'
     msg = ('Select a group of tags to use for your next random search. '
            f'Currently you\'ve selected {selected}.')
@@ -181,6 +183,22 @@ async def select_tags(update: Update, context: CallbackContext) -> int:
 
 
 async def delete_tags(update: Update, context: CallbackContext) -> int:
+    tags = get_data(0, 'booru_tags')
+    if not tags:
+        await update.message.reply_text(
+            text='No saved tags found! Please add some tags to delete them!'
+        )
+        return MAIN_MENU
+    start_msg = ('Here you can delete tag groups. Press STOP to go back to'
+                 ' main menu.')
+    keyboard = keyboard = ReplyKeyboardMarkup([['STOP']])
+    await update.message.reply_text(text=start_msg, reply_markup=keyboard)
+    msg = 'Select a tag to delete it:'
+    reply_markup = InlineKeyboardMarkup(
+        form_keyboard(data=tags.keys(), num_of_col=2,
+                      inline=True, callback_form='delete_')
+    )
+    await update.message.reply_text(text=msg, reply_markup=reply_markup)
     return DELETE_TAGS
 
 
@@ -205,10 +223,6 @@ async def resolve_add_tags(update: Update, context: CallbackContext) -> int:
            '\n\nYou can add more or press \'STOP\' to go back to booru')
     await update.message.reply_text(msg)
     return ADD_TAGS
-
-
-async def resolve_delete_tags(update: Update, context: CallbackContext) -> int:
-    return MAIN_MENU
 
 
 async def resolve_edit_tags(update: Update, context: CallbackContext) -> int:
@@ -254,6 +268,32 @@ async def btn_select_tags(update: Update, context: CallbackContext) -> int:
 
 
 async def btn_delete_tag(update: Update, context: CallbackContext) -> int:
+    query = update.callback_query
+    selected_tag = query.data.split('_')[1]
+    current_tags = get_data(0, 'booru_tags')
+    if not current_tags.get(selected_tag):
+        reply_markup = InlineKeyboardMarkup(
+            form_keyboard(data=current_tags.keys(),
+                          num_of_col=2, inline=True,
+                          callback_form='delete_')
+        )
+        await query.answer(show_alert=False)
+        msg = ('The tag group you have selected does not exist!\n'
+               'You probably clicked on an old button. Stop that.\n'
+               'Try again.')
+        await query.edit_message_text(text=msg, reply_markup=reply_markup)
+        return DELETE_TAGS
+    del current_tags[selected_tag]
+    put_data(current_tags, 0, 'booru_tags')
+    reply_markup = InlineKeyboardMarkup(
+        form_keyboard(data=current_tags.keys(),
+                      num_of_col=2, inline=True,
+                      callback_form='delete_')
+    )
+    await query.answer(show_alert=False)
+    msg = (f'Deleted tag group {selected_tag}. Select another one to delete. '
+           'Or just press STOP.')
+    await query.edit_message_text(text=msg, reply_markup=reply_markup)
     return DELETE_TAGS
 
 
@@ -291,7 +331,6 @@ BOORU_CONVERSATION = ConversationHandler(
         # TODO: Change TEXT to regex
         SEARCH: [MessageHandler(filters.TEXT, resolve_search)],
     },
-    # TODO: Add a fallback for unrecognized text
     fallbacks=[
         MessageHandler(filters.Text(BOORU_BUTTONS[-1]), on_back),
         MessageHandler(filters.Text('STOP'), on_booru),
