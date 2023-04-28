@@ -18,13 +18,12 @@ pipeline {
             steps {
                 sh 'pip install -r requirements.txt --user'
                 sh 'python -m pytest --junit-xml test-reports/pytest_results.xml'
-                }
             }
         }
-        post {
-            always {
-                junit 'test-reports/results.xml'
-            }
+    }
+    post {
+        always {
+            junit 'test-reports/results.xml'
         }
     }
 }
