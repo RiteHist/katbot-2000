@@ -6,8 +6,6 @@ services:
       - redis_data:/data
     command: redis-server --save 60 1 --loglevel warning
     restart: always
-    ports:
-      - 6379:6379
   bot:
     build:
       context: .

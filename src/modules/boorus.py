@@ -77,8 +77,7 @@ async def get_random_img(update: Update, context: CallbackContext) -> int:
     else:
         search_query = ' '
     try:
-        response = await client.search(query=search_query, gacha=True,
-                                       random=True)
+        response = await client.search(query=search_query, gacha=True)
     except KeyError:
         raise EmptyBooruResult(booru=selected_client, tags=search_query)
     img_info = booru.resolve(response)
