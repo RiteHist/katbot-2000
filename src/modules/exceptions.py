@@ -1,4 +1,4 @@
-class WrongChatID(Exception):
+class WrongChatIDError(Exception):
     def __init__(self, chat_id) -> None:
         self.chat_id = chat_id
         super().__init__()
@@ -7,7 +7,7 @@ class WrongChatID(Exception):
         return f'Got an unexpected chat id: {self.chat_id}.'
 
 
-class NoImageURL(Exception):
+class NoImageURLError(Exception):
     def __init__(self, value) -> None:
         self.value = value
         super().__init__()
@@ -16,7 +16,7 @@ class NoImageURL(Exception):
         return f'The returned value for image URL was {self.value}.'
 
 
-class EmptyAPIKey(Exception):
+class EmptyAPIKeyError(Exception):
     def __init__(self, site) -> None:
         self.site = site
         super().__init__()
@@ -25,7 +25,7 @@ class EmptyAPIKey(Exception):
         return f'The API key for site {self.site} is empty.'
 
 
-class EmptySiteInfo(Exception):
+class EmptySiteInfoError(Exception):
     def __init__(self, request, img_field) -> None:
         self.request = request
         self.img_field = img_field
@@ -37,7 +37,7 @@ class EmptySiteInfo(Exception):
                 f'Image field value: {self.img_field}')
 
 
-class StatusCodeNot200(Exception):
+class StatusCodeNot200Error(Exception):
     def __init__(self, status_code) -> None:
         self.status_code = status_code
         super().__init__()
@@ -47,7 +47,7 @@ class StatusCodeNot200(Exception):
                 'trying to reach an endpoint.')
 
 
-class EmptyBooruResult(Exception):
+class EmptyBooruResultError(Exception):
     def __init__(self, booru, tags) -> None:
         self.booru = booru
         self.tags = tags
@@ -58,7 +58,7 @@ class EmptyBooruResult(Exception):
                 f'with following tags: {self.tags}')
 
 
-class NonResolvableResponse(Exception):
+class NonResolvableResponseError(Exception):
     def __init__(self, booru, tags, response) -> None:
         self.booru = booru
         self.tags = tags

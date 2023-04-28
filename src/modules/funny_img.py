@@ -4,8 +4,8 @@ from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 from .db_util import get_data, put_data
 from .utils import check_user, form_keyboard
-from .exceptions import (NoImageURL, EmptyAPIKey,
-                         EmptySiteInfo, StatusCodeNot200)
+from .exceptions import (NoImageURLError, EmptyAPIKeyError,
+                         EmptySiteInfoError, StatusCodeNot200Error)
 
 
 # TODO: Add a way for user to add new image sources through chat
@@ -16,13 +16,12 @@ def get_image_url(target_url: str, image_field: str) -> str:
     """Get image url from target."""
     response = requests.get(target_url)
     if response.status_code != 200:
-        raise StatusCodeNot200(response.status_code)
+        raise StatusCodeNot200Error(response.status_code)
     response = response.json()
     if isinstance(response, dict):
-        img = response.get(image_field)
+        return response.get(image_field)
     else:
-        img = response[0].get(image_field)
-    return img
+        return response[0].get(image_field)
 
 
 def post_image(site: str) -> str:
@@ -36,14 +35,14 @@ def post_image(site: str) -> str:
         api_param = api_param + '='
         api_key = os.getenv(site.upper() + '_API_KEY')
         if not api_key:
-            raise EmptyAPIKey(site)
+            raise EmptyAPIKeyError(site)
         if '?' in img_request:
             api_param = '&' + api_param
         else:
             api_param = '?' + api_param
         img_request = img_request + api_param + api_key
     if not img_request or not img_field:
-        raise EmptySiteInfo(img_request, img_field)
+        raise EmptySiteInfoError(img_request, img_field)
     return get_image_url(img_request, img_field)
 
 
@@ -80,7 +79,7 @@ async def send_funny_image(update: Update, context: CallbackContext) -> None:
                                         'images with /change_funni command')
     image = post_image(curr_site)
     if not image:
-        raise NoImageURL(image)
+        raise NoImageURLError(image)
     if image.endswith('.gif'):
         await update.message.reply_animation(image)
     else:

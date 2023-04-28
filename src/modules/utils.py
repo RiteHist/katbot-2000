@@ -2,7 +2,7 @@ import os
 from telegram import (InlineKeyboardButton, Chat,
                       Update, ReplyKeyboardMarkup)
 from telegram.ext import CallbackContext, ConversationHandler
-from .exceptions import WrongChatID
+from .exceptions import WrongChatIDError
 
 
 MAIN_BUTTONS = ['Get funny image',
@@ -40,7 +40,7 @@ def check_user(effective_chat: Chat) -> None:
     """Check that the command came from the correct user."""
     chat_id = effective_chat.id
     if chat_id != int(os.getenv('USER_ID')):
-        raise WrongChatID(chat_id=chat_id)
+        raise WrongChatIDError(chat_id=chat_id)
 
 
 async def on_back(update: Update, context: CallbackContext) -> int:

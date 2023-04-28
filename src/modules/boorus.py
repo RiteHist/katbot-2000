@@ -5,7 +5,7 @@ from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup
 from telegram.ext import (CallbackContext, ConversationHandler,
                           MessageHandler, filters, CallbackQueryHandler)
 from .db_util import get_data, put_data
-from .exceptions import EmptyBooruResult, NonResolvableResponse
+from .exceptions import EmptyBooruResultError, NonResolvableResponseError
 from .utils import form_keyboard, MAIN_BUTTONS, on_back, check_user
 
 
@@ -79,7 +79,7 @@ async def get_random_img(update: Update, context: CallbackContext) -> int:
     try:
         response = await client.search(query=search_query, gacha=True)
     except KeyError:
-        raise EmptyBooruResult(booru=selected_client, tags=search_query)
+        raise EmptyBooruResultError(booru=selected_client, tags=search_query)
     img_info = booru.resolve(response)
     img_info = resolve_image_response(img_info, selected_tags,
                                       selected_client)
@@ -100,15 +100,13 @@ def resolve_image_response(image_info: dict, selected_tags: str,
             if temp:
                 image = temp
                 break
-            else:
-                continue
         if temp:
             image = temp
             break
     post_url = image_info.get('post_url', 'Somewhere from paheal')
     if not image:
-        raise NonResolvableResponse(selected_client,
-                                    selected_tags, image_info)
+        raise NonResolvableResponseError(selected_client,
+                                         selected_tags, image_info)
     img_ext = splitext(urlparse(image).path)[1]
     return (image, post_url, img_ext)
 
