@@ -20,8 +20,7 @@ def get_image_url(target_url: str, image_field: str) -> str:
     response = response.json()
     if isinstance(response, dict):
         return response.get(image_field)
-    else:
-        return response[0].get(image_field)
+    return response[0].get(image_field)
 
 
 def post_image(site: str) -> str:
@@ -92,5 +91,4 @@ def get_keyboard() -> InlineKeyboardMarkup:
     keyboard = form_keyboard(data=site_choices.keys(),
                              num_of_col=2, inline=True,
                              callback_form='setting_funny_')
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    return reply_markup
+    return InlineKeyboardMarkup(keyboard)

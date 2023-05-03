@@ -13,13 +13,7 @@ pipeline {
             steps {
                 sh 'pip install --user -r requirements.txt'
                 sh 'pip install flake8 pep8-naming flake8-broken-line flake8-return'
-                sh "python -m flake8 src/ --output-file=test-reports/flake8.txt || exit 0"
-                sh '''
-                    python -m venv .venv
-                    . .venv/bin/activate
-                    pip install flake8-junit-report
-                    flake8_junit test-reports/flake8.txt test-reports/flake8_results.xml
-                '''
+                sh "python -m flake8 --exit-zero src/ --output-file=test-reports/flake8.txt"
             }
         }
         stage('Unit Tests') {
@@ -31,8 +25,8 @@ pipeline {
     }
     post {
         always {
-            junit 'test-reports/flake8_results.xml'
             junit 'test-reports/pytest_results.xml'
+            recordIssues(tools: [flake8(pattern: 'test-reports/flake8.txt')])
         }
         cleanup {
             cleanWs()

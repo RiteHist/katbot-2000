@@ -66,7 +66,6 @@ class NonResolvableResponseError(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        msg = (f'Can\'t resolve response from {self.booru}.\n'
-               f'Tags used: {self.tags}\n'
-               f'Response: {self.response}')
-        return msg
+        return (f'Can\'t resolve response from {self.booru}.\n'
+                f'Tags used: {self.tags}\n'
+                f'Response: {self.response}')
