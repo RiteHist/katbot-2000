@@ -20,6 +20,8 @@ def load_data() -> None:
                     data_to_save.update({row[0]: {'request_url': row[1],
                                                   'image_field': row[2],
                                                   'api_key': row[3]}})
+                else:
+                    data_to_save.update({row[0]: row[1]})
         key = csv_file.stem
         if data_to_save:
             put_data(data_to_save, 0, key)
