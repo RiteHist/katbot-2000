@@ -188,7 +188,7 @@ async def delete_tags(update: Update, context: CallbackContext) -> int:
         return MAIN_MENU
     start_msg = ('Here you can delete tag groups. Press STOP to go back to'
                  ' main menu.')
-    keyboard = keyboard = ReplyKeyboardMarkup([['STOP']])
+    keyboard = ReplyKeyboardMarkup([['STOP']])
     await update.message.reply_text(text=start_msg, reply_markup=keyboard)
     msg = 'Select a tag to delete it:'
     reply_markup = InlineKeyboardMarkup(
